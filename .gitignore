@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.joblib
+models/
+data/datasets/harddrive.csv
