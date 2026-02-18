@@ -3,3 +3,4 @@ __pycache__/
 *.joblib
 models/
 data/datasets/harddrive.csv
+smartctl_logs/
