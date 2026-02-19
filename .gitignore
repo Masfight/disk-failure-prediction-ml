@@ -6,3 +6,4 @@ data/datasets/harddrive.csv
 smartctl_logs/
 reports/
 show_feature_importance.py
+disk_tool.egg-info/

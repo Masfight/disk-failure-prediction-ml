@@ -16,3 +16,6 @@ dependencies = [
 
 [project.scripts]
 disk-tool = "app.cli:main"
+
+[tool.setuptools]
+packages = ["app"]
