@@ -4,3 +4,4 @@ __pycache__/
 models/
 data/datasets/harddrive.csv
 smartctl_logs/
+show_feature_importance.py
