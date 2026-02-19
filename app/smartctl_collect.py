@@ -1,5 +1,7 @@
 import json
 import subprocess
+import datetime as dt
+from pathlib import Path
 
 
 def run_cmd(cmd, timeout_sec=30):
@@ -70,3 +72,34 @@ def list_hdd_devices_excluding_usb():
         })
 
     return out
+
+def dump_smartctl_a(device, out_dir, timeout_sec=60):
+    """
+    Выполняет `smartctl -a <device>` и пишет stdout+stderr в лог.
+    out_dir: str|Path (папка куда складываем логи)
+    Возвращает Path к файлу лога.
+    """
+    if not isinstance(out_dir, Path):
+        out_dir = Path(out_dir)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    ts = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    dev_safe = device.replace("/", "_")
+    log_path = out_dir / ("smartctl-a%s_%s.log" % (dev_safe, ts))
+
+    cp = run_cmd(["smartctl", "-a", device], timeout_sec=timeout_sec)
+
+    with open(str(log_path), "w", encoding="utf-8") as f:
+        f.write("# timestamp: %s\n" % dt.datetime.now().isoformat())
+        f.write("# cmd: smartctl -a %s\n" % device)
+        f.write("# returncode: %s\n\n" % cp.returncode)
+
+        if cp.stdout:
+            f.write(cp.stdout)
+
+        if cp.stderr:
+            f.write("\n\n# --- STDERR ---\n")
+            f.write(cp.stderr)
+
+    return log_path
