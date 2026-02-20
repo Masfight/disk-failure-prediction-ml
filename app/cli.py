@@ -1,11 +1,13 @@
 import argparse
 import sys
 from pathlib import Path
+import joblib
 
 from app.smartctl_collect import list_hdd_devices_excluding_usb, dump_smartctl_a
 from app.smartctl_parse import build_backblaze_row, write_csv
+from app.predictor import predict_from_csv
 
-
+#DETECT
 def cmd_detect(args):
     try:
         hdds = list_hdd_devices_excluding_usb()
@@ -30,6 +32,7 @@ def cmd_detect(args):
 
     return 0
 
+#COLLECT
 def cmd_collect(args):
     # куда складываем логи (по умолчанию ./smartctl_logs)
     logs_dir = Path(args.logs_dir)
@@ -77,6 +80,7 @@ def cmd_collect(args):
 
     return 0
 
+#PARSE
 def cmd_parse(args):
     log_path = Path(args.log)
     if not log_path.exists():
@@ -93,6 +97,48 @@ def cmd_parse(args):
         return 2
 
     print("CSV saved: %s" % str(out_csv))
+    return 0
+
+#PREDICT
+def cmd_predict_csv(args):
+    model_path = args.model
+    csv_path = args.csv
+
+    try:
+        pipeline = joblib.load(model_path)
+    except Exception as e:
+        print("ERROR: failed to load model: %s" % str(e), file=sys.stderr)
+        return 2
+
+    try:
+        df, pred, proba = predict_from_csv(pipeline, csv_path)
+    except Exception as e:
+        print("ERROR: prediction failed: %s" % str(e), file=sys.stderr)
+        return 2
+
+    # печать результатов по строкам
+    for i in range(len(pred)):
+        serial = "NA"
+        model_name = "NA"
+
+        if "serial_number" in df.columns:
+            try:
+                serial = str(df.loc[i, "serial_number"])
+            except Exception:
+                pass
+
+        if "model" in df.columns:
+            try:
+                model_name = str(df.loc[i, "model"])
+            except Exception:
+                pass
+
+        p = proba[i]
+
+        print("Result #%d: serial=%s model=%s" % (i + 1, serial, model_name))
+        print("  predicted_class: %s" % str(pred[i]))
+        print("  probabilities: low=%.4f medium=%.4f high=%.4f" % (p[0], p[1], p[2]))
+
     return 0
 
 def build_parser():
@@ -133,6 +179,23 @@ def build_parser():
         help="Output CSV path"
     )
     parse_parser.set_defaults(func=cmd_parse)
+
+    #predict subcommand
+    predict_csv_parser = subparsers.add_parser(
+        "predict",
+        help="Predict risk class from CSV"
+    )
+    predict_csv_parser.add_argument(
+        "--csv",
+        required=True,
+        help="Input CSV file (data/datasets/smartctl_local.csv)"
+    )
+    predict_csv_parser.add_argument(
+        "--model",
+        default="models/random_forest_hdd.joblib",
+        help="Path to trained model (.joblib)"
+    )
+    predict_csv_parser.set_defaults(func=cmd_predict_csv)
 
 
     return parser
