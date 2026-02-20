@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from app.smartctl_collect import list_hdd_devices_excluding_usb, dump_smartctl_a
+from app.smartctl_parse import build_backblaze_row, write_csv
 
 
 def cmd_detect(args):
@@ -76,6 +77,23 @@ def cmd_collect(args):
 
     return 0
 
+def cmd_parse(args):
+    log_path = Path(args.log)
+    if not log_path.exists():
+        print("ERROR: log file not found: %s" % str(log_path), file=sys.stderr)
+        return 2
+
+    out_csv = Path(args.out_csv)
+
+    try:
+        row = build_backblaze_row(log_path, failure=0)
+        write_csv([row], out_csv)
+    except Exception as e:
+        print("ERROR: failed to parse log: %s" % str(e), file=sys.stderr)
+        return 2
+
+    print("CSV saved: %s" % str(out_csv))
+    return 0
 
 def build_parser():
     parser = argparse.ArgumentParser(
@@ -85,12 +103,14 @@ def build_parser():
 
     subparsers = parser.add_subparsers(dest="command",title="commands",metavar="")
 
+    #detect subcommand
     detect_parser = subparsers.add_parser(
         "detect",
         help="Detect HDD devices (excluding USB)"
     )
     detect_parser.set_defaults(func=cmd_detect)
 
+    #collect subcommand
     collect_parser = subparsers.add_parser(
         "collect",
         help="Collect SMART data using smartctl and save logs"
@@ -100,6 +120,20 @@ def build_parser():
     collect_parser.add_argument("--logs-dir", default="smartctl_logs", help="Directory for smartctl logs")
     collect_parser.add_argument("--timeout", default="60", help="smartctl timeout in seconds")
     collect_parser.set_defaults(func=cmd_collect)
+
+    #parse subcommand
+    parse_parser = subparsers.add_parser(
+        "parse",
+        help="Parse smartctl log into CSV"
+    )
+    parse_parser.add_argument("--log", required=True, help="Path to smartctl log file")
+    parse_parser.add_argument(
+        "--out-csv",
+        default="data/datasets/smartctl_parsed.csv",
+        help="Output CSV path"
+    )
+    parse_parser.set_defaults(func=cmd_parse)
+
 
     return parser
 
