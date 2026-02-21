@@ -1,6 +1,5 @@
 __pycache__/
 *.pyc
-*.joblib
 data/datasets/harddrive.csv
 smartctl_logs/
 reports/
