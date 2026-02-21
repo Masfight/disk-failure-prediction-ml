@@ -6,6 +6,9 @@ LAST_RESULTS = None
 LAST_REPORT_PATH = None
 LAST_ERROR = None
 
+def main():
+    app.run(debug=True)
+
 def _get_prob(r, key: str) -> float:
     probs = r.get("probabilities")
     if not probs:
@@ -92,4 +95,4 @@ def predict():
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    main()
