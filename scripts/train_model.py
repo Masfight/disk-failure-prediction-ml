@@ -93,7 +93,7 @@ def train_model(X, y):
     pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('model', RandomForestClassifier(
-            n_estimators=100,
+            n_estimators=500,
             random_state=42,
             class_weight='balanced',
             n_jobs=-1,

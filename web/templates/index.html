@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Прогноз отказа HDD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      max-width: 1000px;
+      background: #f5f6f7;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      padding: 14px 20px;
+      background: #1976d2;
+      color: white;
+      border-radius: 12px;
+      border: 1px solid #00314d;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      display: inline-block;
+    }
+
+    .muted {
+      color: #666;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .ok {
+      border-left: 6px solid #4CAF50;
+    }
+
+    .error {
+      border-left: 6px solid #F44336;
+      background: #fff5f5;
+    }
+
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1 1 280px;
+    }
+
+    .risk-low { color: #2e7d32; font-weight: bold; }
+    .risk-medium { color: #f9a825; font-weight: bold; }
+    .risk-high { color: #c62828; font-weight: bold; }
+
+    ul {
+      margin-top: 6px;
+    }
+
+    code {
+      background: #eee;
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #00314d;
+      background: #1976d2;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .bar-wrap { background:#eee; border-radius:8px; overflow:hidden; height:14px; }
+    .bar { height: 14px; width: var(--w, 0%); }
+    .bar-low { background:#2e7d32; }
+    .bar-medium { background:#f9a825; }
+    .bar-high { background:#c62828; }
+    .small { font-size: 0.95em; }
+  </style>
+</head>
+
+<body>
+
+  <h1>Система прогнозирования отказов HDD</h1>
+  <p class="muted">
+    Загрузите CSV-файл со SMART-показателями и получите класс риска отказа и вероятности по каждому диску.
+  </p>
+
+  <div class="card">
+    <h2>Загрузка данных</h2>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".csv" required>
+      <button type="submit">Рассчитать риск</button>
+    </form>
+
+    <div style="margin-top:12px;">
+      <form action="/" method="get">
+        <label class="muted small"><b>Сортировка:</b></label>
+        <select name="sort">
+          <option value="risk_desc" {% if sort_mode == "risk_desc" %}selected{% endif %}>По риску (высокий → низкий)</option>
+          <option value="risk_asc" {% if sort_mode == "risk_asc" %}selected{% endif %}>По риску (низкий → высокий)</option>
+          <option value="high_prob_desc" {% if sort_mode == "high_prob_desc" %}selected{% endif %}>По вероятности high</option>
+        </select>
+        <button type="submit">Применить</button>
+      </form>
+    </div>
+
+    <p class="muted" style="margin-top:10px;">
+      Формат: CSV. Используются признаки вида <code>smart_*_raw</code>.
+    </p>
+  </div>
+
+  {% if error %}
+    <div class="card error">
+      <h2>Ошибка</h2>
+      <p>{{ error }}</p>
+    </div>
+  {% endif %}
+
+  {% if results %}
+    <div class="card ok">
+      <h2>Результаты прогнозирования</h2>
+      <h3>Распределение по классам</h3>
+      <p class="muted small">Всего дисков: {{ total }}</p>
+
+      {% set max_count = [counts.low, counts.medium, counts.high] | max %}
+      {% if max_count == 0 %}{% set max_count = 1 %}{% endif %}
+
+      <p class="small"><b>Low:</b> {{ counts.low }}</p>
+      <div class="bar-wrap">
+        <div class="bar bar-low" style="--w: {{ (counts.low * 100 / max_count) }}%;"></div>
+      </div>
+
+      <p class="small" style="margin-top:10px;"><b>Medium:</b> {{ counts.medium }}</p>
+      <div class="bar-wrap">
+        <div class="bar bar-medium" style="--w: {{ (counts.medium * 100 / max_count) }}%;"></div>
+      </div>
+
+      <p class="small" style="margin-top:10px;"><b>High:</b> {{ counts.high }}</p>
+      <div class="bar-wrap">
+        <div class="bar bar-high" style="--w: {{ (counts.high * 100 / max_count) }}%;"></div>
+      </div>
+
+      {% for r in results %}
+        <div class="card" style="margin-top:12px;">
+          <p class="muted"><b>Запись #{{ r.row }}</b></p>
+
+          <div class="row">
+            <div class="col">
+              <p><b>Модель диска:</b> {{ r.model }}</p>
+              <p><b>Серийный номер:</b> {{ r.serial }}</p>
+            </div>
+
+            <div class="col">
+              <p><b>Класс риска:</b>
+                {% if r.predicted_class == 0 %}
+                  <span class="risk-low">0 (Низкий риск)</span>
+                {% elif r.predicted_class == 1 %}
+                  <span class="risk-medium">1 (Средний риск)</span>
+                {% elif r.predicted_class == 2 %}
+                  <span class="risk-high">2 (Высокий риск)</span>
+                {% else %}
+                  {{ r.predicted_class }}
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          {% if r.probabilities %}
+            <h3>Вероятности классов</h3>
+            <ul>
+                <li>low: {{ "%.4f"|format(r.probabilities["low"]) }}</li>
+                <li>medium: {{ "%.4f"|format(r.probabilities["medium"]) }}</li>
+                <li>high: {{ "%.4f"|format(r.probabilities["high"]) }}</li>
+            </ul>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      {% if report_path %}
+        <p class="muted">
+          Отчёт сохранён: <code>{{ report_path }}</code>
+        </p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+</body>
+</html>
