@@ -1,0 +1,3 @@
+[console_scripts]
+disk-tool = app.cli:main
+disk-tool-web = web.web_app:main

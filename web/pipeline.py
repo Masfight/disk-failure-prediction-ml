@@ -21,10 +21,12 @@ def predict_from_file(file_storage):
         pipeline = joblib.load(MODEL_PATH)
         df, pred, proba = predict_from_csv(pipeline, tmp_path)
 
+        df = df.reset_index(drop=True)
+
         results = []
         for i in range(len(df)):
-            serial = str(df.loc[i, "serial_number"]) if "serial_number" in df.columns else "NA"
-            model = str(df.loc[i, "model"]) if "model" in df.columns else "NA"
+            serial = str(df.iloc[i]["serial_number"]) if "serial_number" in df.columns else "NA"
+            model  = str(df.iloc[i]["model"]) if "model" in df.columns else "NA"
 
             # proba может быть None, если в пайплайне нет predict_proba
             if proba is not None:

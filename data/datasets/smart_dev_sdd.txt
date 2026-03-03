@@ -1,0 +1,196 @@
+root@prox:/hdd3/images/161# smartctl -a /dev/sdd
+smartctl 7.3 2022-02-28 r5338 [x86_64-linux-6.8.4-2-pve] (local build)
+Copyright (C) 2002-22, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF INFORMATION SECTION ===
+Model Family:     Seagate BarraCuda 3.5 (CMR)
+Device Model:     ST1000DM010-2EP102
+Serial Number:    Z9AQAA0D
+LU WWN Device Id: 5 000c50 0b0036a07
+Firmware Version: CC43
+User Capacity:    1,000,204,886,016 bytes [1.00 TB]
+Sector Sizes:     512 bytes logical, 4096 bytes physical
+Rotation Rate:    7200 rpm
+Form Factor:      3.5 inches
+Device is:        In smartctl database 7.3/5319
+ATA Version is:   ATA8-ACS T13/1699-D revision 4
+SATA Version is:  SATA 3.0, 6.0 Gb/s (current: 1.5 Gb/s)
+Local Time is:    Mon Mar  2 14:43:44 2026 MSK
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
+
+=== START OF READ SMART DATA SECTION ===
+SMART overall-health self-assessment test result: PASSED
+
+General SMART Values:
+Offline data collection status:  (0x00)	Offline data collection activity
+					was never started.
+					Auto Offline Data Collection: Disabled.
+Self-test execution status:      (   0)	The previous self-test routine completed
+					without error or no self-test has ever 
+					been run.
+Total time to complete Offline 
+data collection: 		(    0) seconds.
+Offline data collection
+capabilities: 			 (0x73) SMART execute Offline immediate.
+					Auto Offline data collection on/off support.
+					Suspend Offline collection upon new
+					command.
+					No Offline surface scan supported.
+					Self-test supported.
+					Conveyance Self-test supported.
+					Selective Self-test supported.
+SMART capabilities:            (0x0003)	Saves SMART data before entering
+					power-saving mode.
+					Supports SMART auto save timer.
+Error logging capability:        (0x01)	Error logging supported.
+					General Purpose Logging supported.
+Short self-test routine 
+recommended polling time: 	 (   1) minutes.
+Extended self-test routine
+recommended polling time: 	 ( 112) minutes.
+Conveyance self-test routine
+recommended polling time: 	 (   2) minutes.
+SCT capabilities: 	       (0x1085)	SCT Status supported.
+
+SMART Attributes Data Structure revision number: 10
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000f   069   063   006    Pre-fail  Always       -       167751766
+  3 Spin_Up_Time            0x0003   099   097   000    Pre-fail  Always       -       0
+  4 Start_Stop_Count        0x0032   093   093   020    Old_age   Always       -       7283
+  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x000f   085   060   045    Pre-fail  Always       -       394107018
+  9 Power_On_Hours          0x0032   088   088   000    Old_age   Always       -       10716
+ 10 Spin_Retry_Count        0x0013   100   100   097    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   093   093   020    Old_age   Always       -       7281
+183 Runtime_Bad_Block       0x0032   100   100   000    Old_age   Always       -       0
+184 End-to-End_Error        0x0032   100   100   099    Old_age   Always       -       0
+187 Reported_Uncorrect      0x0032   093   093   000    Old_age   Always       -       7
+188 Command_Timeout         0x0032   100   100   000    Old_age   Always       -       0 0 0
+189 High_Fly_Writes         0x003a   100   100   000    Old_age   Always       -       0
+190 Airflow_Temperature_Cel 0x0022   060   055   040    Old_age   Always       -       40 (Min/Max 40/41)
+193 Load_Cycle_Count        0x0032   097   097   000    Old_age   Always       -       7331
+194 Temperature_Celsius     0x0022   040   014   000    Old_age   Always       -       40 (0 14 0 0 0)
+195 Hardware_ECC_Recovered  0x001a   010   001   000    Old_age   Always       -       167751766
+197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       8
+198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       8
+199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       1
+240 Head_Flying_Hours       0x0000   100   253   000    Old_age   Offline      -       10635h+15m+54.621s
+241 Total_LBAs_Written      0x0000   100   253   000    Old_age   Offline      -       44434054386
+242 Total_LBAs_Read         0x0000   100   253   000    Old_age   Offline      -       32386980978
+
+SMART Error Log Version: 1
+ATA Error Count: 7 (device log contains only the most recent five errors)
+	CR = Command Register [HEX]
+	FR = Features Register [HEX]
+	SC = Sector Count Register [HEX]
+	SN = Sector Number Register [HEX]
+	CL = Cylinder Low Register [HEX]
+	CH = Cylinder High Register [HEX]
+	DH = Device/Head Register [HEX]
+	DC = Device Command Register [HEX]
+	ER = Error register [HEX]
+	ST = Status register [HEX]
+Powered_Up_Time is measured from power on, and printed as
+DDd+hh:mm:SS.sss where DD=days, hh=hours, mm=minutes,
+SS=sec, and sss=millisec. It "wraps" after 49.710 days.
+
+Error 7 occurred at disk power-on lifetime: 10716 hours (446 days + 12 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 ff ff ff 0f  Error: WP at LBA = 0x0fffffff = 268435455
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  61 00 10 ff ff ff 4f 00      00:00:04.185  WRITE FPDMA QUEUED
+  61 00 20 ff ff ff 4f 00      00:00:04.185  WRITE FPDMA QUEUED
+  60 00 00 ff ff ff 4f 00      00:00:04.184  READ FPDMA QUEUED
+  60 00 80 ff ff ff 4f 00      00:00:04.184  READ FPDMA QUEUED
+  60 00 c0 ff ff ff 4f 00      00:00:04.184  READ FPDMA QUEUED
+
+Error 6 occurred at disk power-on lifetime: 10714 hours (446 days + 10 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 ff ff ff 0f  Error: WP at LBA = 0x0fffffff = 268435455
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  61 00 38 ff ff ff 4f 00      00:00:04.192  WRITE FPDMA QUEUED
+  61 00 08 ff ff ff 4f 00      00:00:04.192  WRITE FPDMA QUEUED
+  61 00 00 ff ff ff 4f 00      00:00:04.192  WRITE FPDMA QUEUED
+  60 00 00 ff ff ff 4f 00      00:00:04.159  READ FPDMA QUEUED
+  60 00 80 00 70 a5 4f 00      00:00:04.159  READ FPDMA QUEUED
+
+Error 5 occurred at disk power-on lifetime: 10713 hours (446 days + 9 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 ff ff ff 0f  Error: UNC at LBA = 0x0fffffff = 268435455
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 00 08 ff ff ff 4f 00      00:11:53.515  READ FPDMA QUEUED
+  61 00 10 ff ff ff 4f 00      00:11:53.515  WRITE FPDMA QUEUED
+  ef 10 02 00 00 00 a0 00      00:11:53.515  SET FEATURES [Enable SATA feature]
+  27 00 00 00 00 00 e0 00      00:11:53.514  READ NATIVE MAX ADDRESS EXT [OBS-ACS-3]
+  ec 00 00 00 00 00 a0 00      00:11:53.514  IDENTIFY DEVICE
+
+Error 4 occurred at disk power-on lifetime: 10713 hours (446 days + 9 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 ff ff ff 0f  Error: WP at LBA = 0x0fffffff = 268435455
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  61 00 10 ff ff ff 4f 00      00:11:52.274  WRITE FPDMA QUEUED
+  60 00 08 ff ff ff 4f 00      00:11:50.724  READ FPDMA QUEUED
+  60 00 50 ff ff ff 4f 00      00:11:50.724  READ FPDMA QUEUED
+  60 00 00 ff ff ff 4f 00      00:11:50.723  READ FPDMA QUEUED
+  60 00 80 ff ff ff 4f 00      00:11:50.723  READ FPDMA QUEUED
+
+Error 3 occurred at disk power-on lifetime: 10713 hours (446 days + 9 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 ff ff ff 0f  Error: UNC at LBA = 0x0fffffff = 268435455
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 00 00 ff ff ff 4f 00      00:11:47.942  READ FPDMA QUEUED
+  60 00 80 ff ff ff 4f 00      00:11:47.942  READ FPDMA QUEUED
+  60 00 00 ff ff ff 4f 00      00:11:47.942  READ FPDMA QUEUED
+  60 00 00 ff ff ff 4f 00      00:11:47.942  READ FPDMA QUEUED
+  60 00 50 ff ff ff 4f 00      00:11:47.942  READ FPDMA QUEUED
+
+SMART Self-test log structure revision number 1
+No self-tests have been logged.  [To run self-tests, use: smartctl -t]
+
+SMART Selective self-test log data structure revision number 1
+ SPAN  MIN_LBA  MAX_LBA  CURRENT_TEST_STATUS
+    1        0        0  Not_testing
+    2        0        0  Not_testing
+    3        0        0  Not_testing
+    4        0        0  Not_testing
+    5        0        0  Not_testing
+Selective self-test flags (0x0):
+  After scanning selected spans, do NOT read-scan remainder of disk.
+If Selective self-test is pending on power-up, resume after 0 minute delay.
