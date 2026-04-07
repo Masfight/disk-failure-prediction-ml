@@ -19,8 +19,8 @@
 
 ## Поддерживаемая среда
 
-- **REDOS 7**
-- **Python 3.8**
+- **REDOS 8**
+- **Python 3.11**
 - **smartmontools** (для сбора SMART)
 
 ---
@@ -29,7 +29,7 @@
 **скачать модель можно на вкладке доступных релизов чтобы не испытывать проблем с GIT LFS**
 **поместить ее по пути в проекте ./models/**
 
-## Быстрая установка (REDOS 7)
+## Быстрая установка (REDOS 8)
 ### 1. Установить smartmontools
 ```bash
 dnf install smartmontools
@@ -40,7 +40,7 @@ cd ~/disk-failure-prediction-ml
 ```
 ### 2. Создать виртуальное окружение:
 ```bash
-python3.8 -m venv .venv
+python3.11 -m venv .venv
 ```
 ### 3. Активировать окружение:
 ```bash
