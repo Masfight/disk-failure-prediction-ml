@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -84,12 +84,13 @@ def select_features(df):
     if dropped:
         print(f"Dropped empty features: {dropped}", flush=True)
 
-    X = df[non_empty]
-    y = df['risk_class']
-    return X, y
+    X = df[non_empty].copy()
+    y = df['risk_class'].copy()
+    groups = df["serial_number"].copy()
+    return X, y, groups
 
 
-def train_model(X, y):
+def train_model(X, y, groups):
     pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('model', RandomForestClassifier(
@@ -101,9 +102,57 @@ def train_model(X, y):
         ))
     ])
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+    splitter = GroupShuffleSplit(
+        n_splits=1,
+        test_size=0.2,
+        random_state=42
     )
+
+    train_idx, test_idx = next(splitter.split(X, y, groups=groups))
+
+    X_train = X.iloc[train_idx]
+    X_test = X.iloc[test_idx]
+    y_train = y.iloc[train_idx]
+    y_test = y.iloc[test_idx]
+
+
+
+    train_groups = groups.iloc[train_idx]
+    test_groups = groups.iloc[test_idx]
+
+    overlap = set(train_groups.unique()) & set(test_groups.unique())
+    if overlap:
+        raise RuntimeError(f"Split leakage detected: {len(overlap)} disks in both train and test")
+    
+    # undersampling класса 0 только в train
+    train_df = X_train.copy()
+    train_df["risk_class"] = y_train.values
+
+    class_0 = train_df[train_df["risk_class"] == 0]
+    class_1 = train_df[train_df["risk_class"] == 1]
+    class_2 = train_df[train_df["risk_class"] == 2]
+
+    minority_total = len(class_1) + len(class_2)
+
+    # оставляем у класса 0 только часть
+    target_class_0_size = min(len(class_0), 20 * minority_total)
+
+    class_0_sampled = class_0.sample(
+        n=target_class_0_size,
+        random_state=42
+    )
+
+    train_balanced = pd.concat([class_0_sampled, class_1, class_2], axis=0)
+    train_balanced = train_balanced.sample(frac=1, random_state=42).reset_index(drop=True)
+
+    X_train = train_balanced.drop(columns=["risk_class"])
+    y_train = train_balanced["risk_class"]
+
+    print("\nTrain distribution before undersampling:")
+    print(pd.Series(y.iloc[train_idx]).value_counts().sort_index())
+
+    print("\nTrain distribution after undersampling:")
+    print(y_train.value_counts().sort_index())
 
     start_time = time.time()
 
@@ -122,6 +171,8 @@ def train_model(X, y):
     macro_f1 = f1_score(y_test, y_pred, average='macro')
     print(f"\nMacro F1: {macro_f1:.4f}")
     print(f"Training time: {train_time:.1f}s")
+
+    print(f"Train disks: {train_groups.nunique()}, Test disks: {test_groups.nunique()}")
 
     save_report(y_test, y_pred, macro_f1, train_time)
     return pipeline
@@ -145,10 +196,10 @@ if __name__ == "__main__":
     df = build_target(df)
     print(f"[target] done in {time.time()-t:.1f}s", flush=True)
 
-    X, y = select_features(df)
+    X, y, groups = select_features(df)
 
     t = time.time()
-    model = train_model(X, y)
+    model = train_model(X, y, groups)
     print(f"[train] done in {time.time()-t:.1f}s", flush=True)
 
     save_model(model, MODEL_PATH)
