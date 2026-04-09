@@ -15,6 +15,50 @@ def _get_prob(r, key: str) -> float:
         return 0.0
     return float(probs.get(key, 0.0))
 
+def build_risk_display(r):
+    predicted_class = int(r.get("predicted_class", 0))
+    low = _get_prob(r, "low")
+    medium = _get_prob(r, "medium")
+    high = _get_prob(r, "high")
+
+    if predicted_class == 2:
+        return {
+            "display_label": "Высокий риск",
+            "display_message": "Выявлены выраженные признаки деградации накопителя."
+        }
+
+    if predicted_class == 1:
+        return {
+            "display_label": "Средний риск",
+            "display_message": "Выявлены признаки ухудшения состояния накопителя."
+        }
+
+    if high >= 0.30:
+        return {
+            "display_label": "Низкий риск, но есть признаки деградации",
+            "display_message": "Формально модель отнесла накопитель к низкому риску, однако вероятность высокого риска повышена. Рекомендуется дополнительная проверка."
+        }
+
+    if (medium + high) >= 0.40:
+        return {
+            "display_label": "Низкий риск, рекомендуется проверка",
+            "display_message": "Формально модель отнесла накопитель к низкому риску, однако суммарная вероятность тревожных классов заметна."
+        }
+
+    return {
+        "display_label": "Низкий риск",
+        "display_message": "Критических признаков деградации по оценке модели не выявлено."
+    }
+
+
+def enrich_results(items):
+    enriched = []
+    for r in items or []:
+        item = dict(r)
+        item.update(build_risk_display(item))
+        enriched.append(item)
+    return enriched
+
 def sort_results(items, mode: str):
     items = list(items or [])
 
@@ -89,7 +133,8 @@ def predict():
         return redirect(url_for("index"))
 
     LAST_ERROR = None
-    LAST_RESULTS = predict_from_file(file)
+    raw_results = predict_from_file(file)
+    LAST_RESULTS = enrich_results(raw_results)
     LAST_REPORT_PATH = save_report({"items": LAST_RESULTS})
 
     return redirect(url_for("index"))
